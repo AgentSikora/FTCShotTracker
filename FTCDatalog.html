@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTC Launcher Data Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        textarea, input, select {
+            -webkit-appearance: none;
+        }
+        #notification {
+            transition: opacity 0.3s;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 p-2 sm:p-4">
+
+    <div class="w-full max-w-2xl mx-auto bg-gray-800 rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8 space-y-6">
+
+        <!-- Header -->
+        <div class="text-center">
+             <h1 class="text-3xl font-bold text-white">FTC Launcher Data Tracker</h1>
+             <p id="current-date" class="text-gray-400 mt-1"></p>
+        </div>
+
+        <!-- Team Selection -->
+        <div>
+            <label for="team-select" class="block text-sm font-medium text-gray-300 mb-2">Select Team</label>
+            <select id="team-select" class="w-full bg-gray-700 border-2 border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                <option value="team1">Team 14820</option>
+                <option value="team2">Team 14284</option>
+            </select>
+        </div>
+
+        <!-- Notes Input -->
+        <div>
+            <label for="notes" class="block text-sm font-medium text-gray-300 mb-2">Distance / Angle / Notes (Saved with each shot)</label>
+            <input type="text" id="notes" name="notes" class="w-full bg-gray-700 border-2 border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="e.g., 8ft, 30 degrees, new flywheel">
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="grid grid-cols-3 grid-rows-3 gap-x-3 md:gap-x-4 gap-y-6 md:gap-y-8 justify-items-center items-center py-4">
+            <button id="miss-long" class="control-btn bg-yellow-600 hover:bg-yellow-500 col-start-2 row-start-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
+                <span>Long</span>
+            </button>
+            <button id="miss-left" class="control-btn bg-orange-600 hover:bg-orange-500 col-start-1 row-start-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                <span>Left</span>
+            </button>
+            <button id="hit" class="control-btn bg-green-600 hover:bg-green-500 col-start-2 row-start-2 w-24 h-24 md:w-28 md:h-28 text-2xl font-bold">
+                HIT
+            </button>
+            <button id="miss-right" class="control-btn bg-orange-600 hover:bg-orange-500 col-start-3 row-start-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                <span>Right</span>
+            </button>
+            <button id="miss-short" class="control-btn bg-yellow-600 hover:bg-yellow-500 col-start-2 row-start-3">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                <span>Short</span>
+            </button>
+        </div>
+        
+        <style>
+            .control-btn {
+                width: 6rem; height: 6rem; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 9999px; font-weight: 600; color: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); transition: background-color 0.2s, transform 0.1s; border: 2px solid rgba(255,255,255,0.2);
+            }
+            @media (min-width: 768px) { .control-btn { width: 7rem; height: 7rem; } }
+        </style>
+
+    </div>
+
+    <!-- Notification Element -->
+    <div id="notification" class="fixed bottom-5 right-5 bg-green-600 text-white py-2 px-4 rounded-lg shadow-lg opacity-0 pointer-events-none" style="transition-property: opacity, transform;"></div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // ==================================================================
+            // GOOGLE FORM DETAILS
+            // ==================================================================
+            const teamsConfig = {
+                team1: {
+                    name: "Team 14820", 
+                    url: "https://docs.google.com/forms/d/e/1FAIpQLScqw9smvSfKmSgjB4VlFPsVW7ZvxXt2cAqGJZG32JqBudMH-g/formResponse",
+                    resultId: "entry.1889081521",
+                    notesId: "entry.1130111031"
+                },
+                team2: {
+                    name: "Team 14284",
+                    url: "https://docs.google.com/forms/d/e/1FAIpQLSdpA1kUEa1leNzVYTa7J7ge8260_wxXtTaiBcMFTmWTTdWyJg/formResponse",
+                    resultId: "entry.513237149",
+                    notesId: "entry.1156852555"
+                }
+            };
+            // ==================================================================
+
+            const dateElement = document.getElementById('current-date');
+            const notesInput = document.getElementById('notes');
+            const notification = document.getElementById('notification');
+            const teamSelect = document.getElementById('team-select');
+            
+            const controlButtons = [ 'hit', 'miss-short', 'miss-long', 'miss-left', 'miss-right' ];
+            
+            // --- Init ---
+            dateElement.textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
+            // Populate dropdown from config
+            teamSelect.options[0].textContent = teamsConfig.team1.name || 'Team 1';
+            teamSelect.options[0].value = 'team1';
+            teamSelect.options[1].textContent = teamsConfig.team2.name || 'Team 2';
+            teamSelect.options[1].value = 'team2';
+
+
+            // --- UI Functions ---
+            function showNotification(message, isError = false) {
+                notification.textContent = message;
+                notification.className = `fixed bottom-5 right-5 py-2 px-4 rounded-lg shadow-lg text-white ${isError ? 'bg-red-600' : 'bg-green-600'}`;
+                notification.classList.remove('opacity-0');
+                setTimeout(() => notification.classList.add('opacity-0'), 3000);
+            }
+            
+            // --- Data Submission ---
+            async function submitData(buttonId) {
+                const selectedTeamKey = teamSelect.value; // "team1" or "team2"
+                const teamConfig = teamsConfig[selectedTeamKey];
+
+                if (!teamConfig.url.startsWith('http')) {
+                    showNotification(`Configuration for ${teamConfig.name} is missing. Please edit the HTML file.`, true);
+                    return;
+                }
+                
+                const resultText = document.getElementById(buttonId).textContent.trim();
+                const formData = new FormData();
+                formData.append(teamConfig.resultId, resultText);
+                formData.append(teamConfig.notesId, notesInput.value);
+
+                try {
+                    await fetch(teamConfig.url, {
+                        method: 'POST',
+                        body: formData,
+                        mode: 'no-cors'
+                    });
+                    
+                    showNotification(`Submitted "${resultText}" to ${teamConfig.name}.`);
+
+                } catch (error) {
+                    console.error('Submission error:', error);
+                    showNotification('Failed to submit data. Check console for errors.', true);
+                }
+            }
+
+            // --- Event Listeners ---
+            controlButtons.forEach(id => document.getElementById(id)?.addEventListener('click', () => submitData(id)));
+        });
+    </script>
+
+</body>
+</html>
+
